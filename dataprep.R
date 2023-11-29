@@ -1,13 +1,17 @@
-install.packages("lubridate")
-library(lubridate)
+#install.packages("lubridate")
+
+library(tidyverse)
+#library(lubridate)
 library(ggplot2)
-library(dplyr)
+
 
 #reading the dataset
 vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = )
 head(vaccination)
+glimpse(vaccination)
 
-# DATA CLEANING
+
+# *------ DATA CLEANING -----*
 
 #deleting columns
 vaccination[, c('iso_code', 
@@ -19,19 +23,94 @@ head(vaccination)
 
 #checking missing values
 which(is.na(vaccination$country))
-which(is.na(vaccination$iso_code))
 which(is.na(vaccination$date))
 which(is.na(vaccination$total_vaccinations))
 which(is.na(vaccination$people_vaccinated))
 which(is.na(vaccination$people_fully_vaccinated))
 which(is.na(vaccination$daily_vaccinations))
 
-#deleting the missing values
-df_vaccination <- na.omit(vaccination)
-head(df_vaccination)
+#replacing the missing values for 0
+vaccination[is.na(vaccination)] <- 0
+
+# *------ DATA TRANSFORMATION -----*
+
+#getting the rows containing Argetina as value
+filter(vaccination, country == "Argentina")
+(argentina <- filter(vaccination, country == "Argentina"))
+
+summarise(argentina,
+          vac_arg = mean(total_vaccinations))
+
+#creating avg variables for total of vaccines
+#and avg for people vaccinated per country
+by_country <- group_by(vaccination, country)
+totalvac <- summarise(by_country,
+                      count = n(),
+                      avg_vac = mean(total_vaccinations),
+                      avg_people_vaccinated = mean(people_vaccinated))
+totalvac
+
+ggplot(data = totalvac, mapping = aes(x = avg_vac,
+                                      y = avg_people_vaccinated))+
+  geom_point(aes(size = count),
+             alpha = 1/3) +
+  geom_smooth(se = FALSE)
+
+hist(argentina$daily_vaccinations_per_million, 
+     breaks = 30,
+     xlim = c(0, 5000),
+     col = "purple",
+     border = "black",
+     ylim = c(0, 40),
+     xlab = "Daily Vaccinations Per Million",
+     ylab = "Counts",
+     main = "Vaccination in Argentina")
+box(which = "plot",
+    lty = "solid",
+    col = "black")
+
+select(vaccination, country, date, daily_vaccinations_per_million)
+
+plot(vaccination$daily_vaccinations_per_million,
+     vaccination$people_vaccinated_per_hundred,
+     xlim = c(0, 5000),
+     ylim = c(0, 600),
+     xlab = "Daily Vaccinations Per Million",
+     ylab = "Date",
+     main = "",
+     type = "p",
+     pch = 16,
+     col = "blue")
+points(argentina$daily_vaccinations_per_million,
+       argentina$people_vaccinated_per_hundred,
+       type = "p",
+       col = "black")
+
+top_countries <- vaccination %>%
+  arrange(desc(total_vaccinations)) %>%
+  distinct(country, .keep_all = TRUE) %>%
+  head(5)
+
+# Print the result
+print(top_countries)
+
+vaccination %>%
+  select(country, date, total_vaccinations,
+         people_vaccinated,
+         daily_vaccinations) %>%
+  drop_na(total_vaccinations) %>%
+  view()
+
+df_vaccination %>%
+  select(country, date, ends_with("vaccinated")) %>%
+  names()
+
+
 
 #checking for duplicated values
-duplicated(df_vaccination)
+duplicated(df_vaccination$country)
+
+
 
 #checking the type of data 
 typeof(df_vaccination$total_vaccinations)
@@ -46,16 +125,19 @@ as.integer(df_vaccination$daily_vaccinations)
 typeof(df_vaccination$daily_vaccinations)
 summary(df_vaccination)
 
-# Assuming df_vaccination is your data frame and date is the column to convert
-df_vaccination$date <- ymd(df_vaccination$date)
+class(df_vaccination$date)
+df_vaccination$date <- as.Date(df_vaccination$date)
 
 # Check the data type
 typeof(df_vaccination$date)
 
-ggplot(df_vaccination, aes(x = date, y = daily_vaccinations)) +
+ggplot(vaccination, aes(x = argentina, y = daily_vaccinations)) +
   geom_line(color = "blue") +
   labs(title = "Overall Trend in Daily Vaccinations",
-       x = "Date",
+       x = "Argentina",
        y = "Daily Vaccinations")+
   theme_minimal() + 
   theme(text = element_text(size = 14))
+
+
+df_vaccination$date
