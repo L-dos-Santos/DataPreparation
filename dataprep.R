@@ -8,7 +8,7 @@ library(ggplot2)
 #reading the dataset
 vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = )
 head(vaccination)
-glimpse(vaccination)
+#glimpse(vaccination)
 
 
 # *------ DATA CLEANING -----*
@@ -34,35 +34,42 @@ vaccination[is.na(vaccination)] <- 0
 
 # *------ DATA TRANSFORMATION -----*
 
-#getting the rows containing Argetina as value
-filter(vaccination, country == "Argentina")
-(argentina <- filter(vaccination, country == "Argentina"))
+#analising the daily vaccinations
+  hist(vaccination$daily_vaccinations)
 
-summarise(argentina,
-          vac_arg = mean(total_vaccinations))
+#using log10 transformation to normalise
+#the distribution
+vaccination$daily_vaccinations <- log10(
+  vaccination$daily_vaccinations
+)
+
+#histogram after normalisation
+hist(vaccination$daily_vaccinations)
 
 #creating avg variables for total of vaccines
 #and avg for people vaccinated per country
-by_country <- group_by(vaccination, country)
-totalvac <- summarise(by_country,
-                      count = n(),
-                      avg_vac = mean(total_vaccinations),
-                      avg_people_vaccinated = mean(people_vaccinated))
-totalvac
+by_country <- vaccination %>% group_by(country) %>% summarise(
+  count = n(),
+  avg_total_vaccinations = mean(total_vaccinations),
+  avg_people_vaccinated = mean(people_vaccinated)
+  ) 
+  
+by_country
 
-ggplot(data = totalvac, mapping = aes(x = avg_vac,
+#plot
+ggplot(data = by_country, mapping = aes(x = avg_total_vaccinations,
                                       y = avg_people_vaccinated))+
   geom_point(aes(size = count),
              alpha = 1/3) +
   geom_smooth(se = FALSE)
 
-hist(argentina$daily_vaccinations_per_million, 
+hist(vaccination$total_vaccinations, 
      breaks = 30,
      xlim = c(0, 5000),
      col = "purple",
      border = "black",
-     ylim = c(0, 40),
-     xlab = "Daily Vaccinations Per Million",
+     ylim = c(0, 400),
+     xlab = "Total of Vaccinations",
      ylab = "Counts",
      main = "Vaccination in Argentina")
 box(which = "plot",
