@@ -6,7 +6,7 @@ library(ggplot2)
 
 
 #reading the dataset
-vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = )
+vaccination <- read.csv("~/GitHub/AI_CA2/DataPreparation/country_vaccinations.csv", stringsAsFactors = )
 head(vaccination)
 #glimpse(vaccination)
 
@@ -35,8 +35,22 @@ vaccination[is.na(vaccination)] <- 0
 # *------ DATA TRANSFORMATION -----*
 
 #analising the daily vaccinations
-  hist(vaccination$daily_vaccinations)
+hist(vaccination$daily_vaccinations)
 
+# Check data types
+print(sapply(vaccination, class))
+
+#min-max normalisation
+normalizeMinMax <- function (x) {
+return((x - min(x)) / (max(x) - min(x)))
+}
+
+vaccination_minmax <- vaccination
+vaccination_minmax[, 1:4] <- apply(vaccination[, 1:4],
+                                   2, normalizeMinMax)
+  #*Error in x - min(x) : non-numeric argument to binary operator*
+
+  
 #using log10 transformation to normalise
 #the distribution
 vaccination$daily_vaccinations <- log10(
