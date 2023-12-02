@@ -6,7 +6,7 @@ library(ggplot2)
 
 
 #reading the dataset
-vaccination <- read.csv("~/GitHub/AI_CA2/DataPreparation/country_vaccinations.csv", stringsAsFactors = )
+vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = )
 head(vaccination)
 #glimpse(vaccination)
 
