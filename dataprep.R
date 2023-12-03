@@ -7,7 +7,7 @@ library(gridExtra)
 
 
 #reading the dataset
-vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = )
+vaccination <- read.csv("~/GitHub/AI_CA2/DataPreparation/country_vaccinations.csv", stringsAsFactors = )
 head(vaccination)
 
 # *------ DATA CLEANING -----*
@@ -69,20 +69,29 @@ normalizeMinMax <- function (x) {
 vaccination_minmax <- as.data.frame(sapply(vaccination[,3:8], normalizeMinMax))
 summary(vaccination_minmax)
 
+# Standardize the numeric columns
+normalizeStandardize <- function(x) {
+  res <- (x - mean(x)) / sd(x)
+  return(res)
+}
+
+# Creating a standardized data frame
+vaccination_standardized <- as.data.frame(sapply(df_numeric, normalizeStandardize))
+
 
 p1 <- ggplot(vaccination, aes(x = people_vaccinated_per_hundred)) +
-  geom_histogram(fill = "blue", color = "black", bins = 30) +
-  labs(title = "Histogram of Sepal Length (Original Data)")
+  geom_boxplot(fill = "blue", color = "black", bins = 30) +
+  labs(title = "Boxplot of Sepal Length (Original Data)")
 
 p2 <- ggplot(vaccination_minmax, aes(x = people_vaccinated_per_hundred)) +
-  geom_histogram(fill = "green", color = "black", bins = 30) +
-  labs(title = "Histogram of Sepal Length (Min-Max Scaled)")
+  geom_boxplot(fill = "green", color = "black", bins = 30) +
+  labs(title = "Boxplot of Sepal Length (Min-Max Scaled)")
 
-p3 <- ggplot(vaccination_standardized, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "red", color = "black", bins = 30)
-  labs(title = "Histogram of Sepal Length (Standardized)")
+p3 <- ggplot(vaccination_standardized, aes(x = "", y = daily_vaccinations)) +
+  geom_boxplot(fill = "red", color = "black", bins = 30)
+  labs(title = "Boxplot of Sepal Length (Standardized)")
   
-grid.arrange(p1, p2, nrow = 2, ncol = 2)
+grid.arrange(p1, p2, p3, nrow = 2, ncol = 2)
 
 #using log10 transformation to normalise
 #the distribution
@@ -92,9 +101,14 @@ vaccination$daily_vaccinations <- log10(
 )
 
 #histogram after normalisation
-hist(vaccination$daily_vaccinations)
-
-
+barplot(vaccination$daily_vaccinations,
+        col = "black",        
+        border = "skyblue",       
+        main = "Daily Vaccinations",  
+        xlab = "Categories",    
+        ylab = "Counts",        
+        ylim = c(0, 400),     
+)
 
 
 #creating avg variables for total of vaccines
@@ -114,7 +128,7 @@ ggplot(data = by_country, mapping = aes(x = avg_total_vaccinations,
              alpha = 1/3) +
   geom_smooth(se = FALSE)
 
-hist(vaccination$total_vaccinations, 
+barplot(vaccination$total_vaccinations, 
      breaks = 30,
      xlim = c(0, 5000),
      col = "purple",
@@ -139,8 +153,8 @@ plot(vaccination$daily_vaccinations_per_million,
      type = "p",
      pch = 16,
      col = "blue")
-points(argentina$daily_vaccinations_per_million,
-       argentina$people_vaccinated_per_hundred,
+points(Argentina$daily_vaccinations_per_million,
+       Argentina$people_vaccinated_per_hundred,
        type = "p",
        col = "black")
 
@@ -185,7 +199,7 @@ summary(vaccination)
 
 
 
-ggplot(vaccination, aes(x = argentina, y = daily_vaccinations)) +
+ggplot(vaccination, aes(x = Argentina, y = daily_vaccinations)) +
   geom_line(color = "blue") +
   labs(title = "Overall Trend in Daily Vaccinations",
        x = "Argentina",
@@ -195,3 +209,4 @@ ggplot(vaccination, aes(x = argentina, y = daily_vaccinations)) +
 
 
 df_vaccination$date
+
