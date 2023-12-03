@@ -68,10 +68,10 @@ sapply(vaccination_z_score,sd)
 
 #using log10 transformation to normalise
 #the distribution
-vaccination$daily_vaccinations <- log10(
+vaccination_log <- log10(
   vaccination$daily_vaccinations
 )
-summary(vaccination$daily_vaccinations)
+summary(vaccination_log)
 
 p1 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "blue", color = "black", bins = 30) +
