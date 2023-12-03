@@ -125,7 +125,7 @@ ggplot(data = by_country, mapping = aes(x = avg_total_vaccinations,
              alpha = 1/3) +
   geom_smooth(se = FALSE)
 
-barplot(vaccination$total_vaccinations, 
+plot(vaccination$total_vaccinations, 
      breaks = 30,
      xlim = c(0, 5000),
      col = "purple",
@@ -149,7 +149,7 @@ plot(vaccination$daily_vaccinations_per_million,
      main = "",
      type = "p",
      pch = 16,
-     col = "blue")
+     col = "lightpink")
 points(Argentina$daily_vaccinations_per_million,
        Argentina$people_vaccinated_per_hundred,
        type = "p",
@@ -163,6 +163,16 @@ top_countries <- vaccination %>%
 # Print the result
 print(top_countries)
 
+#plot with top 5 countries
+ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_vaccinations)) +
+  geom_bar(stat = "identity", fill = "orange", color = "black") +
+  labs(title = "Top 5 Countries with Highest Total Vaccinations",
+       x = "Country",
+       y = "Total Vaccinations") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
+
+
 vaccination %>%
   select(country, date, total_vaccinations,
          people_vaccinated,
@@ -170,24 +180,24 @@ vaccination %>%
   drop_na(total_vaccinations) %>%
   view()
 
-df_vaccination %>%
+vaccination %>%
   select(country, date, ends_with("vaccinated")) %>%
   names()
 
 
 
 #checking for duplicated values
-duplicated(df_vaccination$country)
+duplicated(vaccination$country)
 
 
 
 #checking the type of data 
-typeof(df_vaccination$total_vaccinations)
+typeof(vaccination$total_vaccinations)
 typeof(vaccination$date)
-typeof(df_vaccination$daily_vaccinations)
+typeof(vaccination$daily_vaccinations)
 
 #checking the number of rows
-NROW(df_vaccination)
+NROW(vaccination)
 
 
 as.Date(vaccination$date)
@@ -205,5 +215,5 @@ ggplot(vaccination, aes(x = Argentina, y = daily_vaccinations)) +
   theme(text = element_text(size = 14))
 
 
-df_vaccination$date
+vaccination$date
 
