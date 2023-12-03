@@ -7,7 +7,7 @@ library(gridExtra)
 
 
 #reading the dataset
-vaccination <- read.csv("~/GitHub/AI_CA2/DataPreparation/country_vaccinations.csv", stringsAsFactors = )
+vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = )
 head(vaccination)
 
 # *------ DATA CLEANING -----*
@@ -43,14 +43,6 @@ hist(vaccination$daily_vaccinations)
 #transforming character to Date
 vaccination$date <- as.Date(vaccination$date, format = "%d-%m-%Y")
 
-#creating a data frame only with numeric variables
-df_numeric <- subset(vaccination, select = 
-                       c(total_vaccinations,
-                         people_vaccinated, 
-                         people_fully_vaccinated,
-                         daily_vaccinations))
-df_numeric
-
 #checking variable with non finite values
 any(!is.finite((df_numeric$total_vaccinations)))
 any(!is.finite((df_numeric$people_vaccinated)))
@@ -70,40 +62,42 @@ vaccination_minmax <- as.data.frame(sapply(vaccination[,3:8], normalizeMinMax))
 summary(vaccination_minmax)
 
 # Standardize the numeric columns
-normalizeStandardize <- function(x) {
+z_score <- function(x) {
   res <- (x - mean(x)) / sd(x)
   return(res)
 }
 
-# Creating a standardized data frame
-vaccination_standardized <- as.data.frame(sapply(df_numeric, normalizeStandardize))
-
+# Creating a z score standardization data frame
+vaccination_z_score <- as.data.frame(sapply(vaccination[,3:8], z_score))
+summary(vaccination_z_score)
+sapply(vaccination_z_score,sd)
 #using log10 transformation to normalise
 #the distribution
 vaccination$daily_vaccinations <- log10(
   vaccination$daily_vaccinations
 )
+summary(vacccination_log)
 
-p1 <- ggplot(vaccination, aes(x = people_vaccinated_per_hundred)) +
+p1 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "blue", color = "black", bins = 30) +
   labs(title = "Boxplot of Sepal Length (Original Data)")
 
-p2 <- ggplot(vaccination_minmax, aes(x = people_vaccinated_per_hundred)) +
+p2 <- ggplot(vaccination_minmax, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "lightgreen", color = "black", bins = 30) +
   labs(title = "Boxplot of Sepal Length (Min-Max Scaled)")
 
-p3 <- ggplot(vaccination_standardized, aes(x = daily_vaccinations)) +
+p3 <- ggplot(vaccination_z_score, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "red", color = "black", bins = 30) +
   labs(title = "Boxplot of Sepal Length (Standardized)")
 
-p4 <- p4 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
+p4 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "skyblue", color = "black", bins = 30) +
   labs(title = "Histogram of Log-Transformed Daily Vaccinations",
        x = "Log(Daily Vaccinations)",
        y = "Frequency")
 
   
-grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+grid.arrange(p1, p2, p3, nrow = 2, ncol = 2)
 
 
 
