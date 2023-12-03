@@ -78,34 +78,33 @@ normalizeStandardize <- function(x) {
 # Creating a standardized data frame
 vaccination_standardized <- as.data.frame(sapply(df_numeric, normalizeStandardize))
 
+#using log10 transformation to normalise
+#the distribution
+vaccination$daily_vaccinations <- log10(
+  vaccination$daily_vaccinations
+)
 
 p1 <- ggplot(vaccination, aes(x = people_vaccinated_per_hundred)) +
   geom_histogram(fill = "blue", color = "black", bins = 30) +
   labs(title = "Boxplot of Sepal Length (Original Data)")
 
 p2 <- ggplot(vaccination_minmax, aes(x = people_vaccinated_per_hundred)) +
-  geom_histogram(fill = "green", color = "black", bins = 30) +
+  geom_histogram(fill = "lightgreen", color = "black", bins = 30) +
   labs(title = "Boxplot of Sepal Length (Min-Max Scaled)")
 
 p3 <- ggplot(vaccination_standardized, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "red", color = "black", bins = 30) +
   labs(title = "Boxplot of Sepal Length (Standardized)")
+
+p4 <- p4 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
+  geom_histogram(fill = "skyblue", color = "black", bins = 30) +
+  labs(title = "Histogram of Log-Transformed Daily Vaccinations",
+       x = "Log(Daily Vaccinations)",
+       y = "Frequency")
+
   
-grid.arrange(p1, p2, p3, nrow = 2, ncol = 2)
+grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 
-#using log10 transformation to normalise
-#the distribution
-
-vaccination$daily_vaccinations <- log10(
-  vaccination$daily_vaccinations
-)
-
-#histogram after normalisation
-hist(vaccination$daily_vaccinations,
-        col = "skyblue",        
-        border = "black",       
-        main = "Daily Vaccinations",  
-)
 
 
 #creating avg variables for total of vaccines
@@ -117,6 +116,12 @@ by_country <- vaccination %>% group_by(country) %>% summarise(
   ) 
   
 by_country
+
+#filter to find Argentina
+argentina <- filter(vaccination, country == "Argentina")
+
+# Display the filtered data
+print(argentina)
 
 #plot
 ggplot(data = by_country, mapping = aes(x = avg_total_vaccinations,
