@@ -3,13 +3,12 @@
 library(tidyverse)
 #library(lubridate)
 library(ggplot2)
+library(gridExtra)
 
 
 #reading the dataset
 vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = )
 head(vaccination)
-#glimpse(vaccination)
-
 
 # *------ DATA CLEANING -----*
 
@@ -20,6 +19,9 @@ vaccination[, c('iso_code',
                    'source_name', 
                    'source_website')] <- list(NULL)
 head(vaccination)
+
+# Check data types
+print(sapply(vaccination, class))
 
 #checking missing values
 which(is.na(vaccination$country))
@@ -34,31 +36,66 @@ vaccination[is.na(vaccination)] <- 0
 
 # *------ DATA TRANSFORMATION -----*
 
+
 #analising the daily vaccinations
 hist(vaccination$daily_vaccinations)
 
-# Check data types
-print(sapply(vaccination, class))
+#transforming character to Date
+vaccination$date <- as.Date(vaccination$date, format = "%d-%m-%Y")
 
-#min-max normalisation
+#creating a data frame only with numeric variables
+df_numeric <- subset(vaccination, select = 
+                       c(total_vaccinations,
+                         people_vaccinated, 
+                         people_fully_vaccinated,
+                         daily_vaccinations))
+df_numeric
+
+#checking variable with non finite values
+any(!is.finite((df_numeric$total_vaccinations)))
+any(!is.finite((df_numeric$people_vaccinated)))
+any(!is.finite((df_numeric$people_fully_vaccinated)))
+any(!is.finite((df_numeric$daily_vaccinations)))
+
+
+#min-max normalization
 normalizeMinMax <- function (x) {
-return((x - min(x)) / (max(x) - min(x)))
+  res <- (x - min(x)) / (max(x) - min(x))
+  return(res)
 }
 
-vaccination_minmax <- vaccination
-vaccination_minmax[, 1:4] <- apply(vaccination[, 1:4],
-                                   2, normalizeMinMax)
-  #*Error in x - min(x) : non-numeric argument to binary operator*
+#creating a data frame with the numeric values
+#[,3:8] means that we are selecting from the 3th column to the 8th
+vaccination_minmax <- as.data.frame(sapply(vaccination[,3:8], normalizeMinMax))
+summary(vaccination_minmax)
 
+
+p1 <- ggplot(vaccination, aes(x = people_vaccinated_per_hundred)) +
+  geom_histogram(fill = "blue", color = "black", bins = 30) +
+  labs(title = "Histogram of Sepal Length (Original Data)")
+
+p2 <- ggplot(vaccination_minmax, aes(x = people_vaccinated_per_hundred)) +
+  geom_histogram(fill = "green", color = "black", bins = 30) +
+  labs(title = "Histogram of Sepal Length (Min-Max Scaled)")
+
+p3 <- ggplot(vaccination_standardized, aes(x = daily_vaccinations)) +
+  geom_histogram(fill = "red", color = "black", bins = 30)
+  labs(title = "Histogram of Sepal Length (Standardized)")
   
+grid.arrange(p1, p2, nrow = 2, ncol = 2)
+
 #using log10 transformation to normalise
 #the distribution
+
 vaccination$daily_vaccinations <- log10(
   vaccination$daily_vaccinations
 )
 
 #histogram after normalisation
 hist(vaccination$daily_vaccinations)
+
+
+
 
 #creating avg variables for total of vaccines
 #and avg for people vaccinated per country
@@ -135,22 +172,18 @@ duplicated(df_vaccination$country)
 
 #checking the type of data 
 typeof(df_vaccination$total_vaccinations)
-typeof(df_vaccination$date)
+typeof(vaccination$date)
 typeof(df_vaccination$daily_vaccinations)
 
 #checking the number of rows
 NROW(df_vaccination)
 
-#converting from double to integer
-as.integer(df_vaccination$daily_vaccinations)
-typeof(df_vaccination$daily_vaccinations)
-summary(df_vaccination)
 
-class(df_vaccination$date)
-df_vaccination$date <- as.Date(df_vaccination$date)
+as.Date(vaccination$date)
+typeof(vaccination$date)
+summary(vaccination)
 
-# Check the data type
-typeof(df_vaccination$date)
+
 
 ggplot(vaccination, aes(x = argentina, y = daily_vaccinations)) +
   geom_line(color = "blue") +
