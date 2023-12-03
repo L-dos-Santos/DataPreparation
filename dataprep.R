@@ -80,15 +80,15 @@ vaccination_standardized <- as.data.frame(sapply(df_numeric, normalizeStandardiz
 
 
 p1 <- ggplot(vaccination, aes(x = people_vaccinated_per_hundred)) +
-  geom_boxplot(fill = "blue", color = "black", bins = 30) +
+  geom_histogram(fill = "blue", color = "black", bins = 30) +
   labs(title = "Boxplot of Sepal Length (Original Data)")
 
 p2 <- ggplot(vaccination_minmax, aes(x = people_vaccinated_per_hundred)) +
-  geom_boxplot(fill = "green", color = "black", bins = 30) +
+  geom_histogram(fill = "green", color = "black", bins = 30) +
   labs(title = "Boxplot of Sepal Length (Min-Max Scaled)")
 
-p3 <- ggplot(vaccination_standardized, aes(x = "", y = daily_vaccinations)) +
-  geom_boxplot(fill = "red", color = "black", bins = 30)
+p3 <- ggplot(vaccination_standardized, aes(x = daily_vaccinations)) +
+  geom_histogram(fill = "red", color = "black", bins = 30) +
   labs(title = "Boxplot of Sepal Length (Standardized)")
   
 grid.arrange(p1, p2, p3, nrow = 2, ncol = 2)
@@ -101,13 +101,10 @@ vaccination$daily_vaccinations <- log10(
 )
 
 #histogram after normalisation
-barplot(vaccination$daily_vaccinations,
-        col = "black",        
-        border = "skyblue",       
+hist(vaccination$daily_vaccinations,
+        col = "skyblue",        
+        border = "black",       
         main = "Daily Vaccinations",  
-        xlab = "Categories",    
-        ylab = "Counts",        
-        ylim = c(0, 400),     
 )
 
 
