@@ -43,12 +43,6 @@ hist(vaccination$daily_vaccinations)
 #transforming character to Date
 vaccination$date <- as.Date(vaccination$date, format = "%d-%m-%Y")
 
-#checking variable with non finite values
-any(!is.finite((df_numeric$total_vaccinations)))
-any(!is.finite((df_numeric$people_vaccinated)))
-any(!is.finite((df_numeric$people_fully_vaccinated)))
-any(!is.finite((df_numeric$daily_vaccinations)))
-
 
 #min-max normalization
 normalizeMinMax <- function (x) {
@@ -71,12 +65,13 @@ z_score <- function(x) {
 vaccination_z_score <- as.data.frame(sapply(vaccination[,3:8], z_score))
 summary(vaccination_z_score)
 sapply(vaccination_z_score,sd)
+
 #using log10 transformation to normalise
 #the distribution
 vaccination$daily_vaccinations <- log10(
   vaccination$daily_vaccinations
 )
-summary(vacccination_log)
+summary(vaccination$daily_vaccinations)
 
 p1 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "blue", color = "black", bins = 30) +
@@ -97,7 +92,7 @@ p4 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
        y = "Frequency")
 
   
-grid.arrange(p1, p2, p3, nrow = 2, ncol = 2)
+grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 
 
 
