@@ -79,19 +79,19 @@ summary(vaccination_log)
 
 
 p1 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "blue", color = "black") +
+  geom_histogram(fill = "blue2", color = "black") +
   labs(title = "Histogram of Original Daily Vaccinations")
 
 p2 <- ggplot(vaccination_minmax, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "lightgreen", color = "black") +
+  geom_histogram(fill = "green2", color = "black") +
   labs(title = "Histogram of Min-Max Scaled Daily Vaccinations")
 
 p3 <- ggplot(vaccination_z_score, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "red", color = "black") +
+  geom_histogram(fill = "red2", color = "black") +
   labs(title = "Histogram of Standardized Daily Vaccinations")
 
 p4 <- ggplot(vaccination, aes(x = log10(daily_vaccinations + 1e-10))) +
-  geom_histogram(fill = "skyblue", color = "black") +
+  geom_histogram(fill = "yellow2", color = "black") +
   labs(title = "Histogram of Log-Transformed Daily Vaccinations",
        x = "Log(Daily Vaccinations)",
        y = "Frequency")
@@ -139,7 +139,7 @@ plot(vaccination$total_vaccinations,
 
      breaks = 30,
      xlim = c(0, 5000),
-     col = "purple",
+     col = "purple3",
      border = "black",
      ylim = c(0, 400),
      xlab = "Total of Vaccinations",
@@ -221,14 +221,19 @@ typeof(vaccination$date)
 summary(vaccination)
 
 
+# Filter data for Argentina
+argentina_data <- vaccination %>% filter(country == "Argentina")
 
-ggplot(vaccination, aes(x = argentina, y = daily_vaccinations)) +
-  geom_line(color = "blue") +
-  labs(title = "Overall Trend in Daily Vaccinations",
-       x = "Argentina",
-       y = "Daily Vaccinations")+
+# Plot for Argentina
+ggplot(argentina_data, aes(x = date, y = daily_vaccinations)) +
+  geom_line(color = "skyblue") +
+  labs(title = "Overall Trend in Daily Vaccinations for Argentina",
+       x = "Date",
+       y = "Daily Vaccinations") +
   theme_minimal() + 
-  theme(text = element_text(size = 14))
+  theme(text = element_text(size = 10))
+
+
 
 
 
