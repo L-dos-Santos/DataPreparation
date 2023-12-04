@@ -86,7 +86,7 @@ p2 <- ggplot(vaccination_minmax, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "lightgreen", color = "black") +
   labs(title = "Histogram of Min-Max Scaled Daily Vaccinations")
 
-p3 <- ggplot(vaccination, aes(x = vaccination_z_score(daily_vaccinations))) +
+p3 <- ggplot(vaccination_z_score, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "red", color = "black") +
   labs(title = "Histogram of Standardized Daily Vaccinations")
 
@@ -231,44 +231,5 @@ ggplot(vaccination, aes(x = argentina, y = daily_vaccinations)) +
   theme(text = element_text(size = 14))
 
 
-# Original histogram
-original_plot <- ggplot(vaccination) +
-  aes(x = daily_vaccinations) +
-  geom_histogram(bins = 30, fill = "blue") +
-  theme_minimal() +
-  ggtitle("Original Daily Vaccinations")
-
-# Min-Max Normalized histogram
-minmax_plot <- ggplot(vaccination_minmax) +
-  aes(x = daily_vaccinations) +
-  geom_histogram(bins = 30, fill = "green") +
-  theme_minimal() +
-  ggtitle("Min-Max Normalized Daily Vaccinations")
-
-# Z-score Standardized histogram
-zscore_plot <- ggplot(vaccination_z_score) +
-  aes(x = daily_vaccinations) +
-  geom_histogram(bins = 30, fill = "red") +
-  theme_minimal() +
-  ggtitle("Z-Score Standardized Daily Vaccinations")
-
-# Log-transformed histogram
-log_plot <- ggplot() +
-  aes(x = vaccination_log) +
-  geom_histogram(bins = 30, fill = "purple") +
-  theme_minimal() +
-  ggtitle("Log-Transformed Daily Vaccinations")
-
-# Combine all plots using facet_wrap
-combined_plot <- plot_grid(
-  original_plot,
-  minmax_plot,
-  zscore_plot,
-  log_plot,
-  ncol = 2, labels = "AUTO"
-)
-
-# Print the combined plot
-print(combined_plot)
 
 
