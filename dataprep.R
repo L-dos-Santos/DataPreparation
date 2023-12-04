@@ -2,8 +2,10 @@ library(tidyverse)
 library(ggplot2)
 library(gridExtra)
 library(cowplot)
+library(robustbase)
 
 install.packages("cowplot")
+install.packages("robustbase")
 
 
 #reading the dataset
@@ -123,6 +125,7 @@ boxplot(filtered_country$avg_total_vaccinations,
         names = c("Avarage of Total Vaccinations", 
                   "Avarage of People Vaccinated"))
 
+
 #selecting the top 5 countries
 top_countries <- vaccination %>%
   arrange(desc(total_vaccinations)) %>%
@@ -140,3 +143,19 @@ ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_v
        y = "Total Vaccinations") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
+
+
+
+
+
+
+# robust scalar function
+robust_scalar <- function(x) {
+  median(x) / (quantile(x, probs = 0.75) - quantile(x, probs = 0.25))
+}
+
+# Apply the function to daily_vaccinations
+vaccination_robust <- robust_scalar(vaccination$daily_vaccinations)
+
+# Boxplot of the result
+boxplot(vaccination_robust)
