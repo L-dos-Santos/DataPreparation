@@ -149,13 +149,16 @@ ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_v
 
 
 
-# robust scalar function
+# robust scalar 
+# Define the robust_scalar function
 robust_scalar <- function(x) {
   median(x) / (quantile(x, probs = 0.75) - quantile(x, probs = 0.25))
 }
 
-# Apply the function to daily_vaccinations
-vaccination_robust <- robust_scalar(vaccination$daily_vaccinations)
+# Apply the function to relevant variables
+vaccination_robust <- vaccination %>%
+  select(daily_vaccinations, total_vaccinations, people_vaccinated, people_fully_vaccinated) %>%
+  summarise_all(robust_scalar)
 
 # Boxplot of the result
 boxplot(vaccination_robust)
