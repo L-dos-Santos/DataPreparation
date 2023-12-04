@@ -55,10 +55,6 @@ ggplot(vaccination) +
   theme_minimal()
 
 
-
-
-
-
 #min-max normalization
 normalizeMinMax <- function (x) {
   res <- (x - min(x)) / (max(x) - min(x))
@@ -91,27 +87,28 @@ sapply(vaccination_z_score,sd)
 #using log10 transformation to normalize
 #the distribution
 vaccination_log <- log10(
-  vaccination$daily_vaccinations
-)
+  vaccination$daily_vaccinations + 1e-10)
 summary(vaccination_log)
 
+
 p1 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "blue", color = "black", bins = 30) +
-  labs(title = "Boxplot of Sepal Length (Original Data)")
+  geom_histogram(fill = "blue", color = "black") +
+  labs(title = "Histogram of Original Daily Vaccinations")
 
 p2 <- ggplot(vaccination_minmax, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "lightgreen", color = "black", bins = 30) +
-  labs(title = "Boxplot of Sepal Length (Min-Max Scaled)")
+  geom_histogram(fill = "lightgreen", color = "black") +
+  labs(title = "Histogram of Min-Max Scaled Daily Vaccinations")
 
 p3 <- ggplot(vaccination_z_score, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "red", color = "black", bins = 30) +
-  labs(title = "Boxplot of Sepal Length (Standardized)")
+  geom_histogram(fill = "red", color = "black") +
+  labs(title = "Histogram of Standardized Daily Vaccinations")
 
-p4 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "skyblue", color = "black", bins = 30) +
+p4 <- ggplot(vaccination, aes(x = log10(daily_vaccinations + 1e-10))) +
+  geom_histogram(fill = "skyblue", color = "black") +
   labs(title = "Histogram of Log-Transformed Daily Vaccinations",
        x = "Log(Daily Vaccinations)",
        y = "Frequency")
+
 
   
 grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
@@ -177,11 +174,11 @@ plot(vaccination$daily_vaccinations_per_million,
      type = "p",
      pch = 16,
 
-     col = "blue")
+     col = "lightpink")
 points(argentina$daily_vaccinations_per_million,
        argentina$people_vaccinated_per_hundred,
 
-     col = "lightpink")
+     col = "lightgreen")
 points(Argentina$daily_vaccinations_per_million,
        Argentina$people_vaccinated_per_hundred,
 
