@@ -31,6 +31,9 @@ which(is.na(vaccination$people_vaccinated))
 which(is.na(vaccination$people_fully_vaccinated))
 which(is.na(vaccination$daily_vaccinations))
 
+#checking for duplicated values
+duplicated(vaccination$country)
+
 #replacing the missing values for 0
 vaccination[is.na(vaccination)] <- 0
 
@@ -95,83 +98,32 @@ p4 <- ggplot(vaccination, aes(x = log10(daily_vaccinations + 1e-10))) +
   labs(title = "Histogram of Log-Transformed Daily Vaccinations",
        x = "Log(Daily Vaccinations)",
        y = "Frequency")
-
-
   
 grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
-
-
-#histogram after normalisation
-hist(vaccination$daily_vaccinations)
-
-vaccination
 
 #creating avg variables for total of vaccines
 #and avg for people vaccinated per country
 by_country <- vaccination %>% group_by(country) %>% summarise(
-  count = n(),
   avg_total_vaccinations = mean(total_vaccinations),
   avg_people_vaccinated = mean(people_vaccinated)
   ) 
   
 by_country
 
-boxplot(by_country)
+#filtering the countries where the avarage of total vaccinations and people vaccinated
+#are <5000
+filtered_country <- filter(by_country, 
+                           avg_total_vaccinations <5000 & avg_people_vaccinated < 5000)
+print(filtered_country)
 
-#filter to find Argentina
-argentina <- filter(vaccination, country == "Argentina")
+#box plot to identify outliers
+boxplot(filtered_country$avg_total_vaccinations, 
+        filtered_country$avg_people_vaccinated,
+        main = "Box Plot with Outliers", 
+        names = c("Avarage of Total Vaccinations", 
+                  "Avarage of People Vaccinated"))
 
-# Display the filtered data
-print(argentina)
-
-boxplot(vaccination_z_score)
-
-
-#plot
-ggplot(data = by_country, mapping = aes(x = avg_total_vaccinations,
-                                      y = avg_people_vaccinated))+
-  geom_point(aes(size = count),
-             alpha = 1/3) +
-  geom_smooth(se = FALSE)
-
-
-plot(vaccination$total_vaccinations, 
-
-     breaks = 30,
-     xlim = c(0, 5000),
-     col = "purple",
-     border = "black",
-     ylim = c(0, 400),
-     xlab = "Total of Vaccinations",
-     ylab = "Counts",
-     main = "Vaccination in Argentina")
-box(which = "plot",
-    lty = "solid",
-    col = "black")
-
-select(vaccination, country, date, daily_vaccinations_per_million)
-
-plot(vaccination$daily_vaccinations_per_million,
-     vaccination$people_vaccinated_per_hundred,
-     xlim = c(0, 5000),
-     ylim = c(0, 600),
-     xlab = "Daily Vaccinations Per Million",
-     ylab = "Date",
-     main = "",
-     type = "p",
-     pch = 16,
-
-     col = "lightpink")
-points(argentina$daily_vaccinations_per_million,
-       argentina$people_vaccinated_per_hundred,
-
-     col = "lightgreen")
-points(Argentina$daily_vaccinations_per_million,
-       Argentina$people_vaccinated_per_hundred,
-
-       type = "p",
-       col = "black")
-
+#selecting the top 5 countries
 top_countries <- vaccination %>%
   arrange(desc(total_vaccinations)) %>%
   distinct(country, .keep_all = TRUE) %>%
@@ -188,48 +140,3 @@ ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_v
        y = "Total Vaccinations") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
-
-
-vaccination %>%
-  select(country, date, total_vaccinations,
-         people_vaccinated,
-         daily_vaccinations) %>%
-  drop_na(total_vaccinations) %>%
-  view()
-
-vaccination %>%
-  select(country, date, ends_with("vaccinated")) %>%
-  names()
-
-
-#checking for duplicated values
-duplicated(vaccination$country)
-
-
-
-#checking the type of data 
-typeof(vaccination$total_vaccinations)
-typeof(vaccination$date_new)
-typeof(vaccination$daily_vaccinations)
-
-#checking the number of rows
-NROW(vaccination)
-
-
-as.Date(vaccination$date)
-typeof(vaccination$date)
-summary(vaccination)
-
-
-
-ggplot(vaccination, aes(x = argentina, y = daily_vaccinations)) +
-  geom_line(color = "blue") +
-  labs(title = "Overall Trend in Daily Vaccinations",
-       x = "Argentina",
-       y = "Daily Vaccinations")+
-  theme_minimal() + 
-  theme(text = element_text(size = 14))
-
-
-
-
