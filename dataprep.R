@@ -82,19 +82,19 @@ summary(vaccination_log)
 
 
 p1 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "blue", color = "black") +
+  geom_histogram(fill = "blue2", color = "black") +
   labs(title = "Histogram of Original Daily Vaccinations")
 
 p2 <- ggplot(vaccination_minmax, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "lightgreen", color = "black") +
+  geom_histogram(fill = "green2", color = "black") +
   labs(title = "Histogram of Min-Max Scaled Daily Vaccinations")
 
 p3 <- ggplot(vaccination_z_score, aes(x = daily_vaccinations)) +
-  geom_histogram(fill = "red", color = "black") +
+  geom_histogram(fill = "red2", color = "black") +
   labs(title = "Histogram of Standardized Daily Vaccinations")
 
 p4 <- ggplot(vaccination, aes(x = log10(daily_vaccinations + 1e-10))) +
-  geom_histogram(fill = "skyblue", color = "black") +
+  geom_histogram(fill = "yellow2", color = "black") +
   labs(title = "Histogram of Log-Transformed Daily Vaccinations",
        x = "Log(Daily Vaccinations)",
        y = "Frequency")
