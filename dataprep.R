@@ -4,8 +4,9 @@ library(gridExtra)
 
 
 #reading the dataset
+
 vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = FALSE)
-head(vaccination)
+
 
 # *------ DATA CLEANING -----*
 
