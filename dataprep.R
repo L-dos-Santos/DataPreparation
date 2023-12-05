@@ -1,11 +1,14 @@
 library(tidyverse)
 library(ggplot2)
 library(gridExtra)
-library(cowplot)
+#library(cowplot)
 library(robustbase)
 
-install.packages("cowplot")
+
+
+
 install.packages("robustbase")
+#install.packages("cowplot")
 
 
 #reading the dataset
@@ -34,7 +37,7 @@ which(is.na(vaccination$people_fully_vaccinated))
 which(is.na(vaccination$daily_vaccinations))
 
 #checking for duplicated values
-duplicated(vaccination$country)
+duplicated(vaccination)
 
 #replacing the missing values for 0
 vaccination[is.na(vaccination)] <- 0
@@ -54,16 +57,18 @@ mean(vaccination$daily_vaccinations_per_million)
 #transforming character to Date
 vaccination$date <- as.Date(vaccination$date)
 
+
+#[,3:8] means that we are selecting from the 3th column to the 8th
+#vaccination_minmax <- as.data.frame(sapply(vaccination[,3:8], normalizeMinMax))
+#summary(vaccination_minmax)
+
 #min-max normalization
 normalizeMinMax <- function (x) {
-  res <- (x - min(x)) / (max(x) - min(x))
-  return(res)
+  return ((x - min(x)) / (max(x) - min(x)))
 }
 
-#creating a data frame with the numeric values
-#[,3:8] means that we are selecting from the 3th column to the 8th
-vaccination_minmax <- as.data.frame(sapply(vaccination[,3:8], normalizeMinMax))
-summary(vaccination_minmax)
+daily_vac_norm<-normalizeMinMax(vaccination$daily_vaccinations)
+#total_vac_norm<-normalizeMinMax(vaccination$total_vaccinations)
 
 # Standardize the numeric columns
 z_score <- function(x) {
@@ -71,7 +76,6 @@ z_score <- function(x) {
   return(res)
 }
 
-# Creating a z score standardization data frame
 vaccination_z_score <- as.data.frame(sapply(vaccination[,3:8], z_score))
 summary(vaccination_z_score)
 sapply(vaccination_z_score,sd)
@@ -83,11 +87,17 @@ vaccination_log <- log10(
 summary(vaccination_log)
 
 
+# Normalize the data using the Robust Scaler
+daily_vac_robust <- (vaccination$daily_vaccinations - median(vaccination$daily_vaccinations)) / mad(vaccination$daily_vaccinations)
+
+
+
+
 p1 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
   geom_histogram(fill = "blue2", color = "black") +
   labs(title = "Histogram of Original Daily Vaccinations")
 
-p2 <- ggplot(vaccination_minmax, aes(x = daily_vaccinations)) +
+p2 <- ggplot(vaccination, aes(x = daily_vac_norm)) +
   geom_histogram(fill = "green2", color = "black") +
   labs(title = "Histogram of Min-Max Scaled Daily Vaccinations")
 
@@ -98,10 +108,14 @@ p3 <- ggplot(vaccination_z_score, aes(x = daily_vaccinations)) +
 p4 <- ggplot(vaccination, aes(x = log10(daily_vaccinations + 1e-10))) +
   geom_histogram(fill = "yellow2", color = "black") +
   labs(title = "Histogram of Log-Transformed Daily Vaccinations",
-       x = "Log(Daily Vaccinations)",
-       y = "Frequency")
+       x = "Log(Daily Vaccinations)")
+p5 <- ggplot(vaccination, aes(x = daily_vac_robust)) +
+  geom_histogram(fill = "pink", color = "black") +
+  labs(title = "Histogram of Robust Scalar",
+       x = "Robust Scalar(Daily Vaccinations)")
   
-grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+grid.arrange(p1, p2, p3, p4, p5, nrow = 3, ncol = 3)
+
 
 #creating avg variables for total of vaccines
 #and avg for people vaccinated per country
@@ -125,7 +139,6 @@ boxplot(filtered_country$avg_total_vaccinations,
         names = c("Avarage of Total Vaccinations", 
                   "Avarage of People Vaccinated"))
 
-
 #selecting the top 5 countries
 top_countries <- vaccination %>%
   arrange(desc(total_vaccinations)) %>%
@@ -145,20 +158,3 @@ ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_v
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
 
 
-
-
-
-
-# robust scalar 
-# Define the robust_scalar function
-robust_scalar <- function(x) {
-  median(x) / (quantile(x, probs = 0.75) - quantile(x, probs = 0.25))
-}
-
-# Apply the function to relevant variables
-vaccination_robust <- vaccination %>%
-  select(daily_vaccinations, total_vaccinations, people_vaccinated, people_fully_vaccinated) %>%
-  summarise_all(robust_scalar)
-
-# Boxplot of the result
-boxplot(vaccination_robust)
