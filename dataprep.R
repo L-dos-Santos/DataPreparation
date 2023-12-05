@@ -131,11 +131,17 @@ by_country <- vaccination %>% group_by(country) %>% summarise(
   
 by_country
 
+
+
 #filtering the countries where the avarage of total vaccinations and people vaccinated
 #are <5000
 filtered_country <- filter(by_country, 
                            avg_total_vaccinations <5000 & avg_people_vaccinated < 5000)
 print(filtered_country)
+
+#box plot of total vacinations from the
+#vaccination data frame
+boxplot(vaccination$total_vaccinations)
 
 #box plot to identify outliers
 boxplot(filtered_country$avg_total_vaccinations, 
