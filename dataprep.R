@@ -19,8 +19,8 @@ vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = FALSE)
 
 #deleting columns
 vaccination[, c('iso_code', 
-                   'daily_vaccinations_raw', 
-                   'vaccines', 
+                   'daily_vaccinations_raw',
+                   'vaccines',
                    'source_name', 
                    'source_website')] <- list(NULL)
 head(vaccination)
@@ -87,8 +87,11 @@ vaccination_log <- log10(
 summary(vaccination_log)
 
 
-# Normalize the data using the Robust Scaler
-daily_vac_robust <- (vaccination$daily_vaccinations - median(vaccination$daily_vaccinations)) / mad(vaccination$daily_vaccinations)
+# Normalize the data using the Robust Scalar
+daily_vac_robust <- 
+  (vaccination$daily_vaccinations - median(
+    vaccination$daily_vaccinations)) / mad(
+      vaccination$daily_vaccinations)
 
 
 
@@ -157,4 +160,10 @@ ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_v
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
 
-
+#dummy encoding to country variable
+encoded_data <- model.matrix(
+  ~ country - 1,
+  data = vaccination
+)
+final_data <- cbind(vaccination, encoded_data)
+print(final_data [, 1:15])
