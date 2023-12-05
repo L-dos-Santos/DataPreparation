@@ -1,12 +1,14 @@
 library(tidyverse)
 library(ggplot2)
 library(gridExtra)
-#library(cowplot)
+library(devtools)
 library(robustbase)
+library(ggbiplot)
 
 
 
-
+install.packages("remotes")
+remotes::install_github("vqv/ggbiplot")
 install.packages("robustbase")
 #install.packages("cowplot")
 
@@ -57,10 +59,13 @@ mean(vaccination$daily_vaccinations_per_million)
 #transforming character to Date
 vaccination$date <- as.Date(vaccination$date)
 
-
-#[,3:8] means that we are selecting from the 3th column to the 8th
-#vaccination_minmax <- as.data.frame(sapply(vaccination[,3:8], normalizeMinMax))
-#summary(vaccination_minmax)
+#dummy encoding to country variable
+encoded_data <- model.matrix(
+  ~ country - 1,
+  data = vaccination
+)
+final_data <- cbind(vaccination, encoded_data)
+print(final_data [, 1:15])
 
 #min-max normalization
 normalizeMinMax <- function (x) {
@@ -68,7 +73,6 @@ normalizeMinMax <- function (x) {
 }
 
 daily_vac_norm<-normalizeMinMax(vaccination$daily_vaccinations)
-#total_vac_norm<-normalizeMinMax(vaccination$total_vaccinations)
 
 # Standardize the numeric columns
 z_score <- function(x) {
@@ -92,8 +96,6 @@ daily_vac_robust <-
   (vaccination$daily_vaccinations - median(
     vaccination$daily_vaccinations)) / mad(
       vaccination$daily_vaccinations)
-
-
 
 
 p1 <- ggplot(vaccination, aes(x = daily_vaccinations)) +
@@ -139,8 +141,27 @@ print(filtered_country)
 boxplot(filtered_country$avg_total_vaccinations, 
         filtered_country$avg_people_vaccinated,
         main = "Box Plot with Outliers", 
-        names = c("Avarage of Total Vaccinations", 
-                  "Avarage of People Vaccinated"))
+        names = c("Average of Total Vaccinations", 
+                  "Average of People Vaccinated"),
+        col = c("lightblue", "lightgreen"),  
+        border = c("blue", "green"),       
+        notch = TRUE,                        # Add notches for comparing medians
+        varwidth = TRUE,                     
+        ylim = c(0, max(filtered_country$avg_people_vaccinated) * 1.1),  
+        pch = 19,                            
+        cex = 1.5                            
+)
+
+# Label outliers
+outliers <- boxplot(filtered_country$avg_total_vaccinations, 
+                    filtered_country$avg_people_vaccinated,
+                    plot = FALSE)$out
+text(x = rep(1:2, sapply(outliers, length)),
+     y = unlist(outliers),
+     labels = round(unlist(outliers), 2),
+     pos = 2,
+     col = "red", cex = 1)
+
 
 #selecting the top 5 countries
 top_countries <- vaccination %>%
@@ -151,6 +172,37 @@ top_countries <- vaccination %>%
 # Print the result
 print(top_countries)
 
+#applying PCA
+top_countries_pca <- prcomp(top_countries[, c(3:8)],
+                          center = TRUE,
+                          scale. = TRUE,
+                          tol = 0)
+
+summary(top_countries_pca)
+
+pca_data <- as.data.frame(top_countries_pca$x)
+
+ggplot(pca_data, aes(x = PC1, y = PC2)) +
+  geom_point(color = "darkblue") +
+  labs(title = "PCA Plot")
+
+ggplot(pca_data, aes(x = PC1, y = PC2)) +
+  geom_point(shape = 16, color = "darkblue", size = 3) +  # shape 16 represents a solid circle
+  labs(title = "Scatter Plot of PCA Components")
+
+
+plot(pca_data,
+     main = "",
+     col = "darkblue")
+title(main = "Principal Components Importance for the 5 Top Countries")
+
+
+#loadings for first 3 components
+unclass(top_countries_pca$rotation[,1:3])
+
+#principal components scores
+top_countries_pca$x[, 1:3]
+
 #plot with top 5 countries
 ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_vaccinations)) +
   geom_bar(stat = "identity", fill = "orange", color = "black") +
@@ -160,10 +212,6 @@ ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_v
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
 
-#dummy encoding to country variable
-encoded_data <- model.matrix(
-  ~ country - 1,
-  data = vaccination
-)
-final_data <- cbind(vaccination, encoded_data)
-print(final_data [, 1:15])
+
+
+
