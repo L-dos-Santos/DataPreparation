@@ -4,7 +4,7 @@ library(gridExtra)
 library(devtools)
 library(robustbase)
 library(ggbiplot)
-
+library(factoextra)
 
 
 install.packages("remotes")
@@ -15,7 +15,7 @@ install.packages("robustbase")
 
 #reading the dataset
 vaccination <- read.csv("country_vaccinations.csv", stringsAsFactors = FALSE)
-
+summary(vaccination)
 
 # *------ DATA CLEANING -----*
 
@@ -131,13 +131,21 @@ by_country <- vaccination %>% group_by(country) %>% summarise(
   
 by_country
 
-
-
 #filtering the countries where the avarage of total vaccinations and people vaccinated
 #are <5000
 filtered_country <- filter(by_country, 
                            avg_total_vaccinations <5000 & avg_people_vaccinated < 5000)
 print(filtered_country)
+
+#plot with top 5 countries
+ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_vaccinations)) +
+  geom_bar(stat = "identity", fill = "orange", color = "black") +
+  labs(title = "Top 5 Countries with Highest Total Vaccinations",
+       x = "Country",
+       y = "Total Vaccinations") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
+
 
 #box plot of total vacinations from the
 #vaccination data frame
@@ -151,7 +159,7 @@ boxplot(filtered_country$avg_total_vaccinations,
                   "Average of People Vaccinated"),
         col = c("lightblue", "lightgreen"),  
         border = c("blue", "green"),       
-        notch = TRUE,                        # Add notches for comparing medians
+        notch = FALSE,                        # Add notches for comparing medians
         varwidth = TRUE,                     
         ylim = c(0, max(filtered_country$avg_people_vaccinated) * 1.1),  
         pch = 19,                            
@@ -178,45 +186,28 @@ top_countries <- vaccination %>%
 # Print the result
 print(top_countries)
 
+vaccination_sample <- vaccination[,c(3:10)]
+vaccination_sample
+
 #applying PCA
-top_countries_pca <- prcomp(top_countries[, c(3:8)],
-                          center = TRUE,
-                          scale. = TRUE,
-                          tol = 0)
+vaccination_pca <- prcomp(vaccination_sample,
+                          scale. = TRUE)
 
-summary(top_countries_pca)
+summary(vaccination_pca)
 
-pca_data <- as.data.frame(top_countries_pca$x)
+#elements of PCA object
+names(vaccination_pca)
 
-ggplot(pca_data, aes(x = PC1, y = PC2)) +
-  geom_point(color = "darkblue") +
-  labs(title = "PCA Plot")
+#screen plot of variance
+fviz_eig(vaccination_pca,
+         addlabels = TRUE,
+         ylim = c(0, 70))
 
-ggplot(pca_data, aes(x = PC1, y = PC2)) +
-  geom_point(shape = 16, color = "darkblue", size = 3) +  # shape 16 represents a solid circle
-  labs(title = "Scatter Plot of PCA Components")
-
-
-plot(pca_data,
-     main = "",
-     col = "darkblue")
-title(main = "Principal Components Importance for the 5 Top Countries")
+#biplot
+fviz_pca_biplot(vaccination_pca,
+                label = "var")
 
 
-#loadings for first 3 components
-unclass(top_countries_pca$rotation[,1:3])
-
-#principal components scores
-top_countries_pca$x[, 1:3]
-
-#plot with top 5 countries
-ggplot(top_countries, aes(x = reorder(country, -total_vaccinations), y = total_vaccinations)) +
-  geom_bar(stat = "identity", fill = "orange", color = "black") +
-  labs(title = "Top 5 Countries with Highest Total Vaccinations",
-       x = "Country",
-       y = "Total Vaccinations") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
 
 
 
