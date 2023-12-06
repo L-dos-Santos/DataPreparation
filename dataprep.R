@@ -159,7 +159,7 @@ boxplot(filtered_country$avg_total_vaccinations,
                   "Average of People Vaccinated"),
         col = c("lightblue", "lightgreen"),  
         border = c("blue", "green"),       
-        notch = FALSE,                        # Add notches for comparing medians
+        notch = FALSE,                        
         varwidth = TRUE,                     
         ylim = c(0, max(filtered_country$avg_people_vaccinated) * 1.1),  
         pch = 19,                            
@@ -198,7 +198,7 @@ summary(vaccination_pca)
 #elements of PCA object
 names(vaccination_pca)
 
-#screen plot of variance
+#scree plot of variance
 fviz_eig(vaccination_pca,
          addlabels = TRUE,
          ylim = c(0, 70))
